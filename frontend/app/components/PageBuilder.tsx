@@ -8,27 +8,17 @@ import BlockRenderer from '@/app/components/BlockRenderer'
 import {GetPageQueryResult} from '@/sanity.types'
 import {dataAttr} from '@/sanity/lib/utils'
 import {studioUrl} from '@/sanity/lib/api'
+import type {Client, PageBuilderSection, PageData} from '@/types'
 
 type PageBuilderPageProps = {
-  page: GetPageQueryResult
-}
-
-type PageBuilderSection = {
-  _key: string
-  _type: string
-}
-
-type PageData = {
-  _id: string
-  _type: string
-  pageBuilder?: PageBuilderSection[]
+  page: GetPageQueryResult & { clients?: Client[] }
 }
 
 /**
  * The PageBuilder component is used to render the blocks from the `pageBuilder` field in the Page type in your Sanity Studio.
  */
 
-function renderSections(pageBuilderSections: PageBuilderSection[], page: GetPageQueryResult) {
+function renderSections(pageBuilderSections: PageBuilderSection[], page: GetPageQueryResult & { clients?: Client[] }) {
   if (!page) {
     return null
   }
@@ -47,6 +37,7 @@ function renderSections(pageBuilderSections: PageBuilderSection[], page: GetPage
           block={block}
           pageId={page._id}
           pageType={page._type}
+          clients={page.clients}
         />
       ))}
     </div>

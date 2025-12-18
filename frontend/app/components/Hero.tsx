@@ -2,52 +2,11 @@
 
 import {PortableText} from '@portabletext/react'
 import Image from 'next/image'
+import Marquee from 'react-fast-marquee'
 
 import ResolvedLink from '@/app/components/ResolvedLink'
 import {urlForImage} from '@/sanity/lib/utils'
-
-type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-
-type LocalisedString = {
-  en?: string
-  jp?: string
-}
-
-type LocalisedHeader = LocalisedString & {
-  headingLevel?: HeadingLevel
-}
-
-type LocalisedBlockContent = {
-  en?: any[]
-  jp?: any[]
-}
-
-type Button = {
-  _key: string
-  text?: LocalisedString
-  link?: any
-  variant?: 'primary' | 'secondary'
-}
-
-type HeroBlock = {
-  _key: string
-  _type: 'hero'
-  header?: LocalisedHeader
-  content?: LocalisedBlockContent
-  buttons?: Button[]
-  backgroundType?: 'none' | 'image' | 'video'
-  backgroundImage?: {
-    asset?: any
-    alt?: string
-  }
-  backgroundVideo?: string
-  overlayOpacity?: number
-}
-
-type HeroProps = {
-  block: HeroBlock
-  index: number
-}
+import type {HeadingLevel, LocalisedString, Client, HeroProps} from '@/types'
 
 const headingStyles: Record<HeadingLevel, string> = {
   h1: 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
@@ -84,8 +43,44 @@ function DynamicHeading({
   return <Tag className={className}>{children}</Tag>
 }
 
-export default function Hero({block}: HeroProps) {
-  const {header, content, buttons, backgroundType, backgroundImage, backgroundVideo, overlayOpacity = 50} = block
+function ClientMarquee({ clients, title, hasBackground }: { clients: Client[], title?: LocalisedString, hasBackground: boolean }) {
+  return (
+    <div className="flex flex-col justify-end pb-16 h-full w-full">
+      {title && (title.en || title.jp) && (
+        <p className={`text-sm uppercase tracking-widest mb-6 ${hasBackground ? 'text-white/60' : 'text-gray-400'}`}>
+          {title.en || title.jp}
+        </p>
+      )}
+      <Marquee
+        speed={40}
+        gradient={false}
+        pauseOnHover
+      >
+        {clients.map((client) => (
+          <div
+            key={client._id}
+            className="mx-8"
+          >
+            {client.logo?.asset && (
+              <Image
+                src={urlForImage(client.logo)?.url() || ''}
+                width={150}
+                height={50}
+                objectFit="contain"
+                
+                alt={client.logo.alt?.en || client.companyName?.en || 'Client logo'}
+                className={`  ${hasBackground ? 'brightness-0 invert opacity-70' : 'opacity-60 grayscale'} hover:opacity-100 hover:grayscale-0 transition-all duration-300`}
+              />
+            )}
+          </div>
+        ))}
+      </Marquee>
+    </div>
+  )
+}
+
+export default function Hero({block, clients}: HeroProps) {
+  const {header, content, buttons, backgroundType, backgroundImage, backgroundVideo, overlayOpacity = 50, showClientMarquee, clientMarqueeTitle} = block
 
   const hasBackground = backgroundType === 'image' || backgroundType === 'video'
   const textColor = hasBackground ? 'text-white' : 'text-gray-900'
@@ -109,7 +104,7 @@ export default function Hero({block}: HeroProps) {
       {backgroundType === 'image' && backgroundImage?.asset && (
         <Image
           src={urlForImage(backgroundImage)?.width(1920).height(1080).url() || ''}
-          alt={backgroundImage.alt || ''}
+          alt={typeof backgroundImage.alt === 'string' ? backgroundImage.alt : backgroundImage.alt?.en || ''}
           fill
           className="object-cover"
           priority
@@ -125,7 +120,7 @@ export default function Hero({block}: HeroProps) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex w-full px-5 md:px-10 h-screen">
+      <div className="relative z-10 flex w-full px-5 md:px-10 h-screen justify-between">
         <div className="max-w-4xl space-y-8 w-[40%] mt-auto mb-16">
           {/* Header */}
           {header && (header.en || header.jp) && (
@@ -144,7 +139,7 @@ export default function Hero({block}: HeroProps) {
 
           {/* Content */}
           {content && (content.en || content.jp) && (
-            <div className={`prose  ${hasBackground ? 'prose-invert' : ''} w-[70%]`}>
+            <div className={`prose text-gray-400  ${hasBackground ? 'prose-invert' : ''} w-[70%]`}>
               {content.en && <PortableText value={content.en} />}
               {content.jp && (
                 <div className={`mt-4 ${hasBackground ? 'text-white/70' : 'text-gray-500'}`}>
@@ -185,7 +180,17 @@ export default function Hero({block}: HeroProps) {
             </div>
           )}
         </div>
-        <div className="w-2/3"></div>
+        
+        {/* Client Marquee */}
+        <div className="w-[40%] flex ">
+          {showClientMarquee && clients && clients.length > 0 && (
+            <ClientMarquee 
+              clients={clients} 
+              title={clientMarqueeTitle}
+              hasBackground={hasBackground}
+            />
+          )}
+        </div>
       </div>
     </section>
   )

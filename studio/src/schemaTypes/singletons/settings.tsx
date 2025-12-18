@@ -1,8 +1,6 @@
 import {CogIcon} from '@sanity/icons'
 import {defineArrayMember, defineField, defineType} from 'sanity'
 
-import * as demo from '../../lib/initialValues'
-
 /**
  * Settings schema Singleton.  Singletons are single documents that are displayed not in a collection, handy for things like site settings and other global configurations.
  * Learn more: https://www.sanity.io/docs/create-a-link-to-a-single-edit-page-in-your-main-document-type-list
@@ -13,114 +11,179 @@ export const settings = defineType({
   title: 'Settings',
   type: 'document',
   icon: CogIcon,
+  groups: [
+    {name: 'general', title: 'General', default: true},
+    {name: 'navbar', title: 'Navigation'},
+    {name: 'seo', title: 'SEO'},
+  ],
   fields: [
+    // General
     defineField({
       name: 'title',
-      description: 'This field is the title of your blog.',
-      title: 'Title',
+      description: 'Site title',
+      title: 'Site Title',
       type: 'string',
-      initialValue: demo.title,
+      group: 'general',
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'description',
-      description: 'Used on the Homepage',
-      title: 'Description',
+      name: 'logo',
+      title: 'Logo',
+      type: 'image',
+      group: 'general',
+      options: {
+        hotspot: true,
+      },
+    }),
+
+    // Navbar
+    defineField({
+      name: 'navbar',
+      title: 'Navigation Items',
       type: 'array',
-      initialValue: demo.description,
+      group: 'navbar',
       of: [
-        // Define a minified block content field for the description. https://www.sanity.io/docs/block-content
         defineArrayMember({
-          type: 'block',
-          options: {},
-          styles: [],
-          lists: [],
-          marks: {
-            decorators: [],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: 'Link',
-                fields: [
-                  defineField({
-                    name: 'linkType',
-                    title: 'Link Type',
-                    type: 'string',
-                    initialValue: 'href',
-                    options: {
-                      list: [
-                        {title: 'URL', value: 'href'},
-                        {title: 'Page', value: 'page'},
-                        {title: 'Post', value: 'post'},
+          type: 'object',
+          name: 'navItem',
+          title: 'Navigation Item',
+          fields: [
+            defineField({
+              name: 'label',
+              title: 'Label',
+              type: 'localisedString',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'link',
+              title: 'Link',
+              type: 'link',
+            }),
+            defineField({
+              name: 'hasMegamenu',
+              title: 'Has Megamenu',
+              type: 'boolean',
+              initialValue: false,
+              description: 'Enable to show a dropdown megamenu with columns',
+            }),
+            defineField({
+              name: 'megamenu',
+              title: 'Megamenu Columns',
+              type: 'array',
+              hidden: ({parent}) => !parent?.hasMegamenu,
+              of: [
+                defineArrayMember({
+                  type: 'object',
+                  name: 'megamenuColumn',
+                  title: 'Column',
+                  fields: [
+                    defineField({
+                      name: 'title',
+                      title: 'Column Title',
+                      type: 'localisedString',
+                    }),
+                    defineField({
+                      name: 'links',
+                      title: 'Links',
+                      type: 'array',
+                      of: [
+                        defineArrayMember({
+                          type: 'object',
+                          name: 'megamenuLink',
+                          title: 'Link',
+                          fields: [
+                            defineField({
+                              name: 'label',
+                              title: 'Label',
+                              type: 'localisedString',
+                              validation: (Rule) => Rule.required(),
+                            }),
+                            defineField({
+                              name: 'description',
+                              title: 'Description',
+                              type: 'localisedString',
+                            }),
+                            defineField({
+                              name: 'link',
+                              title: 'Link',
+                              type: 'link',
+                            }),
+                            defineField({
+                              name: 'icon',
+                              title: 'Icon',
+                              type: 'image',
+                            }),
+                          ],
+                          preview: {
+                            select: {
+                              title: 'label.en',
+                              subtitle: 'description.en',
+                              media: 'icon',
+                            },
+                          },
+                        }),
                       ],
-                      layout: 'radio',
+                    }),
+                  ],
+                  preview: {
+                    select: {
+                      title: 'title.en',
+                      links: 'links',
                     },
-                  }),
-                  defineField({
-                    name: 'href',
-                    title: 'URL',
-                    type: 'url',
-                    hidden: ({parent}) => parent?.linkType !== 'href' && parent?.linkType != null,
-                    validation: (Rule) =>
-                      Rule.custom((value, context: any) => {
-                        if (context.parent?.linkType === 'href' && !value) {
-                          return 'URL is required when Link Type is URL'
-                        }
-                        return true
-                      }),
-                  }),
-                  defineField({
-                    name: 'page',
-                    title: 'Page',
-                    type: 'reference',
-                    to: [{type: 'page'}],
-                    hidden: ({parent}) => parent?.linkType !== 'page',
-                    validation: (Rule) =>
-                      Rule.custom((value, context: any) => {
-                        if (context.parent?.linkType === 'page' && !value) {
-                          return 'Page reference is required when Link Type is Page'
-                        }
-                        return true
-                      }),
-                  }),
-                  defineField({
-                    name: 'post',
-                    title: 'Post',
-                    type: 'reference',
-                    to: [{type: 'post'}],
-                    hidden: ({parent}) => parent?.linkType !== 'post',
-                    validation: (Rule) =>
-                      Rule.custom((value, context: any) => {
-                        if (context.parent?.linkType === 'post' && !value) {
-                          return 'Post reference is required when Link Type is Post'
-                        }
-                        return true
-                      }),
-                  }),
-                  defineField({
-                    name: 'openInNewTab',
-                    title: 'Open in new tab',
-                    type: 'boolean',
-                    initialValue: false,
-                  }),
-                ],
-              },
-            ],
+                    prepare({title, links}) {
+                      return {
+                        title: title || 'Column',
+                        subtitle: `${links?.length || 0} links`,
+                      }
+                    },
+                  },
+                }),
+              ],
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'label.en',
+              hasMegamenu: 'hasMegamenu',
+            },
+            prepare({title, hasMegamenu}) {
+              return {
+                title: title || 'Nav Item',
+                subtitle: hasMegamenu ? 'Megamenu' : 'Link',
+              }
+            },
           },
         }),
       ],
     }),
     defineField({
+      name: 'navbarCta',
+      title: 'Navbar CTA Button',
+      type: 'object',
+      group: 'navbar',
+      fields: [
+        defineField({
+          name: 'label',
+          title: 'Label',
+          type: 'localisedString',
+        }),
+        defineField({
+          name: 'link',
+          title: 'Link',
+          type: 'link',
+        }),
+      ],
+    }),
+
+    // SEO
+    defineField({
       name: 'ogImage',
       title: 'Open Graph Image',
       type: 'image',
+      group: 'seo',
       description: 'Displayed on social cards and search engine results.',
       options: {
         hotspot: true,
-        aiAssist: {
-          imageDescriptionField: 'alt',
-        },
       },
       fields: [
         defineField({
@@ -128,26 +191,11 @@ export const settings = defineType({
           description: 'Important for accessibility and SEO.',
           title: 'Alternative text',
           type: 'string',
-          validation: (rule) => {
-            return rule.custom((alt, context) => {
-              if ((context.document?.ogImage as any)?.asset?._ref && !alt) {
-                return 'Required'
-              }
-              return true
-            })
-          },
         }),
         defineField({
           name: 'metadataBase',
           type: 'url',
-          description: (
-            <a
-              href="https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase"
-              rel="noreferrer noopener"
-            >
-              More information
-            </a>
-          ),
+          description: 'Base URL for metadata',
         }),
       ],
     }),

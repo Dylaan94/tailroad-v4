@@ -2,11 +2,68 @@ import {defineQuery} from 'next-sanity'
 
 export const settingsQuery = defineQuery(`*[_type == "settings"][0]`)
 
+export const navbarQuery = defineQuery(`
+  *[_type == "settings"][0]{
+    title,
+    logo,
+    navbar[]{
+      _key,
+      label,
+      link {
+        ...,
+        linkType,
+        href,
+        "page": page->slug.current,
+        "post": post->slug.current,
+        openInNewTab
+      },
+      hasMegamenu,
+      megamenu[]{
+        _key,
+        title,
+        links[]{
+          _key,
+          label,
+          description,
+          link {
+            ...,
+            linkType,
+            href,
+            "page": page->slug.current,
+            "post": post->slug.current,
+            openInNewTab
+          },
+          icon
+        }
+      }
+    },
+    navbarCta {
+      label,
+      link {
+        ...,
+        linkType,
+        href,
+        "page": page->slug.current,
+        "post": post->slug.current,
+        openInNewTab
+      }
+    }
+  }
+`)
+
 export const homePageQuery = defineQuery(`
   *[_type == "homePage" && _id == "homePage"][0]{
     _id,
     _type,
     title,
+    "clients": *[_type == "client" && defined(logo.asset)] | order(_createdAt desc) {
+      _id,
+      companyName,
+      logo {
+        asset,
+        alt
+      }
+    },
     "pageBuilder": pageBuilder[]{
       ...,
       _type == "callToAction" => {
@@ -150,4 +207,15 @@ export const postPagesSlugs = defineQuery(`
 export const pagesSlugs = defineQuery(`
   *[_type == "page" && defined(slug.current)]
   {"slug": slug.current}
+`)
+
+export const allClientsQuery = defineQuery(`
+  *[_type == "client" && defined(logo.asset)] | order(_createdAt desc) {
+    _id,
+    companyName,
+    logo {
+      asset,
+      alt
+    }
+  }
 `)

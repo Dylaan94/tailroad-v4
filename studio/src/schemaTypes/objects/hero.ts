@@ -14,6 +14,7 @@ export const hero = defineType({
   groups: [
     {name: 'content', title: 'Content', default: true},
     {name: 'background', title: 'Background'},
+    {name: 'clients', title: 'Client Marquee'},
   ],
   fields: [
     // Content fields
@@ -133,6 +134,23 @@ export const hero = defineType({
       initialValue: 50,
       validation: (Rule) => Rule.min(0).max(100),
       description: 'Darken the background (0-100%)',
+    }),
+    // Client Marquee
+    defineField({
+      name: 'showClientMarquee',
+      title: 'Show Client Marquee',
+      type: 'boolean',
+      group: 'clients',
+      initialValue: false,
+      description: 'Display a scrolling marquee of client logos',
+    }),
+    defineField({
+      name: 'clientMarqueeTitle',
+      title: 'Marquee Title',
+      type: 'localisedString',
+      group: 'clients',
+      hidden: ({parent}) => !parent?.showClientMarquee,
+      description: 'Text displayed above the marquee (e.g., "Brands we have partnered with")',
     }),
   ],
   preview: {

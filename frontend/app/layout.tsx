@@ -9,10 +9,10 @@ import {Toaster} from 'sonner'
 
 import DraftModeToast from '@/app/components/DraftModeToast'
 import Footer from '@/app/components/Footer'
-import Header from '@/app/components/Header'
+import Navbar from '@/app/components/Navbar'
 import * as demo from '@/sanity/lib/demo'
 import {sanityFetch, SanityLive} from '@/sanity/lib/live'
-import {settingsQuery} from '@/sanity/lib/queries'
+import {settingsQuery, navbarQuery} from '@/sanity/lib/queries'
 import {resolveOpenGraphImage} from '@/sanity/lib/utils'
 import {handleError} from './client-utils'
 
@@ -27,7 +27,6 @@ export async function generateMetadata(): Promise<Metadata> {
     stega: false,
   })
   const title = settings?.title || demo.title
-  const description = settings?.description || demo.description
 
   const ogImage = resolveOpenGraphImage(settings?.ogImage)
   let metadataBase: URL | undefined = undefined
@@ -44,7 +43,6 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${title}`,
       default: title,
     },
-    description: toPlainText(description),
     openGraph: {
       images: ogImage ? [ogImage] : [],
     },
@@ -59,6 +57,7 @@ const inter = Inter({
 
 export default async function RootLayout({children}: {children: React.ReactNode}) {
   const {isEnabled: isDraftMode} = await draftMode()
+  const {data: navbarData} = await sanityFetch({query: navbarQuery})
 
   return (
     <html lang="en" className={`${inter.variable} bg-white text-black`}>
@@ -75,7 +74,7 @@ export default async function RootLayout({children}: {children: React.ReactNode}
           )}
           {/* The <SanityLive> component is responsible for making all sanityFetch calls in your application live, so should always be rendered. */}
           <SanityLive onError={handleError} />
-          {/* <Header /> */}
+          <Navbar data={navbarData as any} />
           <main className="">{children}</main>
           <Footer />
         </section>

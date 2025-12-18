@@ -1,7 +1,8 @@
 import {CogIcon} from '@sanity/icons'
 import type {StructureBuilder, StructureResolver} from 'sanity/structure'
 import pluralize from 'pluralize-esm'
-import { homeStructure } from './homeStructure'
+import {homeStructure} from './homeStructure'
+import {clientSatisfactionStructure} from './clientSatisfactionStructure'
 
 /**
  * Structure builder is useful whenever you want to control how documents are grouped and
@@ -9,21 +10,25 @@ import { homeStructure } from './homeStructure'
  * Learn more: https://www.sanity.io/docs/structure-builder-introduction
  */
 
-const DISABLED_TYPES = ['settings', 'assist.instruction.context', 'homePage']
+// Types to hide from the auto-generated list (singletons, grouped items, internal types)
+const DISABLED_TYPES = ['settings', 'assist.instruction.context', 'homePage', 'client', 'industry', 'service']
 
 export const structure: StructureResolver = (S: StructureBuilder) =>
   S.list()
     .title('Website Content')
     .items([
       homeStructure(S),
+      S.divider(),
       ...S.documentTypeListItems()
-        // Remove the "assist.instruction.context" and "settings" content  from the list of content types
+        // Remove disabled types from the auto-generated list
         .filter((listItem: any) => !DISABLED_TYPES.includes(listItem.getId()))
-        // Pluralize the title of each document type.  This is not required but just an option to consider.
+        // Pluralize the title of each document type
         .map((listItem) => {
           return listItem.title(pluralize(listItem.getTitle() as string))
         }),
-      // Settings Singleton in order to view/edit the one particular document for Settings.  Learn more about Singletons: https://www.sanity.io/docs/create-a-link-to-a-single-edit-page-in-your-main-document-type-list
+      S.divider(),
+      clientSatisfactionStructure(S),
+      // Settings Singleton
       S.listItem()
         .title('Site Settings')
         .child(S.document().schemaType('settings').documentId('siteSettings'))
