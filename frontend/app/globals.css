@@ -2,10 +2,6 @@
 
 @plugin "@tailwindcss/typography";
 
-@utility container {
-  margin: 0 auto;
-  padding: 0 2rem;
-}
 
 @theme {
   --shadow-layer: 0 35px 60px -15px rgba(0, 0, 0, 0.3);

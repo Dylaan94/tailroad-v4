@@ -2,6 +2,51 @@ import {defineQuery} from 'next-sanity'
 
 export const settingsQuery = defineQuery(`*[_type == "settings"][0]`)
 
+export const homePageQuery = defineQuery(`
+  *[_type == "homePage" && _id == "homePage"][0]{
+    _id,
+    _type,
+    title,
+    "pageBuilder": pageBuilder[]{
+      ...,
+      _type == "callToAction" => {
+        link {
+          ...,
+          _type == "link" => {
+            "page": page->slug.current,
+            "post": post->slug.current
+          }
+        }
+      },
+      _type == "infoSection" => {
+        content[]{
+          ...,
+          markDefs[]{
+            ...,
+            _type == "link" => {
+              "page": page->slug.current,
+              "post": post->slug.current
+            }
+          }
+        }
+      },
+      _type == "hero" => {
+        ...,
+        buttons[]{
+          ...,
+          link {
+            ...,
+            _type == "link" => {
+              "page": page->slug.current,
+              "post": post->slug.current
+            }
+          }
+        }
+      },
+    },
+  }
+`)
+
 const postFields = /* groq */ `
   _id,
   "status": select(_originalId in path("drafts.**") => "draft", "published"),
@@ -27,6 +72,16 @@ const linkFields = /* groq */ `
       }
 `
 
+const heroFields = /* groq */ `
+  _type == "hero" => {
+    ...,
+    buttons[]{
+      ...,
+      ${linkFields}
+    }
+  }
+`
+
 export const getPageQuery = defineQuery(`
   *[_type == 'page' && slug.current == $slug][0]{
     _id,
@@ -49,6 +104,7 @@ export const getPageQuery = defineQuery(`
           }
         }
       },
+      ${heroFields},
     },
   }
 `)
