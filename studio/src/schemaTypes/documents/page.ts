@@ -23,9 +23,19 @@ export const page = defineType({
 
     defineField({
       name: 'slug',
-      title: 'Slug',
+      title: 'Slug (English)',
       type: 'slug',
       validation: (Rule) => Rule.required(),
+      options: {
+        source: 'name',
+        maxLength: 96,
+      },
+    }),
+    defineField({
+      name: 'jpSlug',
+      title: 'Slug (Japanese)',
+      type: 'slug',
+      description: 'Japanese version of the slug. If not set, will use the English slug.',
       options: {
         source: 'name',
         maxLength: 96,

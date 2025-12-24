@@ -10,6 +10,7 @@ import {Toaster} from 'sonner'
 import DraftModeToast from '@/app/components/DraftModeToast'
 import Footer from '@/app/components/Footer'
 import Navbar from '@/app/components/Navbar'
+import {LanguageProvider} from '@/app/contexts/LanguageContext'
 import * as demo from '@/sanity/lib/demo'
 import {sanityFetch, SanityLive} from '@/sanity/lib/live'
 import {settingsQuery, navbarQuery} from '@/sanity/lib/queries'
@@ -74,9 +75,11 @@ export default async function RootLayout({children}: {children: React.ReactNode}
           )}
           {/* The <SanityLive> component is responsible for making all sanityFetch calls in your application live, so should always be rendered. */}
           <SanityLive onError={handleError} />
-          <Navbar data={navbarData as any} />
-          <main className="">{children}</main>
-          <Footer />
+          <LanguageProvider>
+            <Navbar data={navbarData as any} />
+            <main className="">{children}</main>
+            <Footer />
+          </LanguageProvider>
         </section>
         <SpeedInsights />
       </body>

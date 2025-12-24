@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 
+import {useLanguage} from '@/app/contexts/LanguageContext'
 import {linkResolver} from '@/sanity/lib/utils'
 
 interface ResolvedLinkProps {
@@ -9,8 +12,17 @@ interface ResolvedLinkProps {
 }
 
 export default function ResolvedLink({link, children, className}: ResolvedLinkProps) {
+  const {language} = useLanguage()
   // resolveLink() is used to determine the type of link and return the appropriate URL.
-  const resolvedLink = linkResolver(link)
+  let resolvedLink = linkResolver(link)
+
+  // Add language prefix for internal links (not external hrefs)
+  if (typeof resolvedLink === 'string' && language === 'jp' && !resolvedLink.startsWith('http')) {
+    // Don't add prefix if it's already there or if it's the root path
+    if (!resolvedLink.startsWith('/jp') && resolvedLink !== '/') {
+      resolvedLink = `/jp${resolvedLink}`
+    }
+  }
 
   if (typeof resolvedLink === 'string') {
     return (

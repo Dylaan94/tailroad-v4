@@ -3,6 +3,7 @@ import React from 'react'
 import Cta from '@/app/components/Cta'
 import Info from '@/app/components/InfoSection'
 import Hero from '@/app/components/Hero'
+import ServicesColumns from '@/app/components/ServicesColumns'
 import {dataAttr} from '@/sanity/lib/utils'
 import type {BaseBlock, BlockRendererProps} from '@/types'
 
@@ -14,6 +15,7 @@ const Blocks: BlocksType = {
   callToAction: Cta,
   infoSection: Info,
   hero: Hero,
+  servicesColumns: ServicesColumns,
 }
 
 /**

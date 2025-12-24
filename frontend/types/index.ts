@@ -121,7 +121,26 @@ export type InfoSectionBlock = BaseBlock & {
   content?: any[]
 }
 
-export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock
+export type ServiceLink = {
+  _key: string
+  title?: LocalisedString
+  link?: SanityLink
+}
+
+export type ServiceColumn = {
+  title?: LocalisedString
+  links?: ServiceLink[]
+}
+
+export type ServicesColumnsBlock = BaseBlock & {
+  _type: 'servicesColumns'
+  header?: LocalisedHeader
+  content?: LocalisedBlockContent
+  column1?: ServiceColumn
+  column2?: ServiceColumn
+}
+
+export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock
 
 // ============================================
 // Component Props Types
@@ -139,6 +158,11 @@ export type HeroProps = {
   block: HeroBlock
   index: number
   clients?: Client[]
+}
+
+export type ServicesColumnsProps = {
+  block: ServicesColumnsBlock
+  index: number
 }
 
 // ============================================

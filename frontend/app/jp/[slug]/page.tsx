@@ -3,7 +3,7 @@ import Head from 'next/head'
 
 import PageBuilderPage from '@/app/components/PageBuilder'
 import {sanityFetch} from '@/sanity/lib/live'
-import {getPageQuery, pagesSlugs} from '@/sanity/lib/queries'
+import {getPageQueryByJpSlug, getPageQuery} from '@/sanity/lib/queries'
 import {GetPageQueryResult} from '@/sanity.types'
 import {PageOnboarding} from '@/app/components/Onboarding'
 
@@ -17,13 +17,13 @@ type Props = {
  */
 export async function generateStaticParams() {
   const {data} = await sanityFetch({
-    query: pagesSlugs,
-    // // Use the published perspective in generateStaticParams
+    query: `*[_type == "page" && defined(jpSlug.current)] {
+      "slug": jpSlug.current
+    }`,
     perspective: 'published',
     stega: false,
   })
-  // Return only English slugs for this route
-  return (data || []).map((item: any) => ({slug: item.slug})).filter((item: any) => item.slug)
+  return data || []
 }
 
 /**
@@ -33,9 +33,8 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const {data: page} = await sanityFetch({
-    query: getPageQuery,
+    query: getPageQueryByJpSlug,
     params,
-    // Metadata should never contain stega
     stega: false,
   })
 
@@ -47,7 +46,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function Page(props: Props) {
   const params = await props.params
-  const [{data: page}] = await Promise.all([sanityFetch({query: getPageQuery, params})])
+  const {data: page} = await sanityFetch({query: getPageQueryByJpSlug, params})
 
   if (!page?._id) {
     return (
@@ -80,3 +79,4 @@ export default async function Page(props: Props) {
     </div>
   )
 }
+

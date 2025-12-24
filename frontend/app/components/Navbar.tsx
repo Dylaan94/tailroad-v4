@@ -4,6 +4,7 @@ import {useState} from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
+import {useLanguage} from '@/app/contexts/LanguageContext'
 import {urlForImage, linkResolver} from '@/sanity/lib/utils'
 import type {NavbarData, NavItem, MegamenuColumn, LocalisedString, SanityLink} from '@/types'
 
@@ -11,11 +12,12 @@ type NavbarProps = {
   data: NavbarData
 }
 
-function resolveLink(link: SanityLink | undefined): string {
+function resolveLink(link: SanityLink | undefined, language: 'en' | 'jp'): string {
   if (!link) return '#'
+  const prefix = language === 'jp' ? '/jp' : ''
   if (link.linkType === 'href' && link.href) return link.href
-  if (link.linkType === 'page' && link.page) return `/${link.page}`
-  if (link.linkType === 'post' && link.post) return `/posts/${link.post}`
+  if (link.linkType === 'page' && link.page) return `${prefix}/${link.page}`
+  if (link.linkType === 'post' && link.post) return `${prefix}/posts/${link.post}`
   return '#'
 }
 
@@ -23,12 +25,14 @@ function NavLink({
   link,
   children,
   className,
+  language,
 }: {
   link?: SanityLink
   children: React.ReactNode
   className?: string
+  language: 'en' | 'jp'
 }) {
-  const href = resolveLink(link)
+  const href = resolveLink(link, language)
   const isExternal = link?.openInNewTab || href.startsWith('http')
 
   return (
@@ -46,9 +50,13 @@ function NavLink({
 function MegamenuDropdown({
   columns,
   isOpen,
+  language,
+  getLocalisedString,
 }: {
   columns: MegamenuColumn[]
   isOpen: boolean
+  language: 'en' | 'jp'
+  getLocalisedString: (localised?: {en?: string; jp?: string}) => string | undefined
 }) {
   if (!isOpen) return null
 
@@ -57,9 +65,9 @@ function MegamenuDropdown({
       <div className="grid grid-cols-2 gap-8">
         {columns.map((column) => (
           <div key={column._key}>
-            {column.title && (column.title.en || column.title.jp) && (
+            {getLocalisedString(column.title) && (
               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                {column.title.en || column.title.jp}
+                {getLocalisedString(column.title)}
               </h3>
             )}
             <ul className="space-y-2">
@@ -67,6 +75,7 @@ function MegamenuDropdown({
                 <li key={item._key}>
                   <NavLink
                     link={item.link}
+                    language={language}
                     className="group flex items-start gap-3 p-2 -mx-2 rounded-lg hover:bg-gray-100/80 transition-colors"
                   >
                     {item.icon?.asset && (
@@ -82,11 +91,11 @@ function MegamenuDropdown({
                     )}
                     <div>
                       <span className="block text-sm font-medium text-gray-900 group-hover:text-black">
-                        {item.label?.en || item.label?.jp}
+                        {getLocalisedString(item.label)}
                       </span>
-                      {item.description && (item.description.en || item.description.jp) && (
+                      {getLocalisedString(item.description) && (
                         <span className="block text-xs text-gray-500 mt-0.5">
-                          {item.description.en || item.description.jp}
+                          {getLocalisedString(item.description)}
                         </span>
                       )}
                     </div>
@@ -101,7 +110,15 @@ function MegamenuDropdown({
   )
 }
 
-function NavItemComponent({item}: {item: NavItem}) {
+function NavItemComponent({
+  item,
+  language,
+  getLocalisedString,
+}: {
+  item: NavItem
+  language: 'en' | 'jp'
+  getLocalisedString: (localised?: {en?: string; jp?: string}) => string | undefined
+}) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -112,7 +129,7 @@ function NavItemComponent({item}: {item: NavItem}) {
     >
       {item.hasMegamenu ? (
         <button className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-black transition-colors px-3 py-2">
-          {item.label?.en || item.label?.jp}
+          {getLocalisedString(item.label)}
           <svg
             className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
             fill="none"
@@ -125,26 +142,35 @@ function NavItemComponent({item}: {item: NavItem}) {
       ) : (
         <NavLink
           link={item.link}
+          language={language}
           className="text-sm font-medium text-gray-700 hover:text-black transition-colors px-3 py-2"
         >
-          {item.label?.en || item.label?.jp}
+          {getLocalisedString(item.label)}
         </NavLink>
       )}
 
       {item.hasMegamenu && item.megamenu && (
-        <MegamenuDropdown columns={item.megamenu} isOpen={isOpen} />
+        <MegamenuDropdown
+          columns={item.megamenu}
+          isOpen={isOpen}
+          language={language}
+          getLocalisedString={getLocalisedString}
+        />
       )}
     </div>
   )
 }
 
 export default function Navbar({data}: NavbarProps) {
+  const {language, setLanguage, getLocalisedString} = useLanguage()
+  const prefix = language === 'jp' ? '/jp' : ''
+
   // Handle null data (settings not yet created)
   if (!data) {
     return (
       <nav className="fixed top-6 right-6 z-50">
         <div className="flex items-center gap-1 px-4 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
-          <Link href="/" className="flex items-center gap-2 px-2">
+          <Link href={prefix || '/'} className="flex items-center gap-2 px-2">
             <Image
               src="/images/tailroad-logo.svg"
               alt="Tailroad Labs"
@@ -154,6 +180,25 @@ export default function Navbar({data}: NavbarProps) {
             />
             <span className="font-medium text-gray-900">Tailroad Labs</span>
           </Link>
+          {/* Language Selector */}
+          <div className="flex items-center gap-1 ml-2 px-2">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                language === 'en' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLanguage('jp')}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                language === 'jp' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              JP
+            </button>
+          </div>
         </div>
       </nav>
     )
@@ -166,7 +211,7 @@ export default function Navbar({data}: NavbarProps) {
       {/* Bubble Container */}
       <div className="flex items-center gap-1 px-2 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
         {/* Logo & Site Title */}
-        <Link href="/" className="flex items-center gap-2 px-3">
+        <Link href={prefix || '/'} className="flex items-center gap-2 px-3">
           <Image
             src="/images/tailroad-logo.svg"
             alt="Tailroad Labs"
@@ -183,22 +228,49 @@ export default function Navbar({data}: NavbarProps) {
         {/* Nav Items */}
         <div className="flex items-center">
           {navbar?.map((item) => (
-            <NavItemComponent key={item._key} item={item} />
+            <NavItemComponent
+              key={item._key}
+              item={item}
+              language={language}
+              getLocalisedString={getLocalisedString}
+            />
           ))}
         </div>
 
         {/* CTA Button */}
-        {navbarCta?.label && (navbarCta.label.en || navbarCta.label.jp) && (
+        {navbarCta && getLocalisedString(navbarCta.label) && (
           <>
             <div className="w-px h-6 bg-gray-200" />
             <NavLink
               link={navbarCta.link}
+              language={language}
               className="ml-1 px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 transition-colors"
             >
-              {navbarCta.label.en || navbarCta.label.jp}
+              {getLocalisedString(navbarCta.label)}
             </NavLink>
           </>
         )}
+
+        {/* Language Selector */}
+        <div className="w-px h-6 bg-gray-200" />
+        <div className="flex items-center gap-1 px-2">
+          <button
+            onClick={() => setLanguage('en')}
+            className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+              language === 'en' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => setLanguage('jp')}
+            className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+              language === 'jp' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
+            }`}
+          >
+            JP
+          </button>
+        </div>
       </div>
     </nav>
   )

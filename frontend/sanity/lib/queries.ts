@@ -2,6 +2,50 @@ import {defineQuery} from 'next-sanity'
 
 export const settingsQuery = defineQuery(`*[_type == "settings"][0]`)
 
+const linkReference = /* groq */ `
+  _type == "link" => {
+    "page": page->slug.current,
+    "post": post->slug.current
+  }
+`
+
+const linkFields = /* groq */ `
+  link {
+      ...,
+      ${linkReference}
+      }
+`
+
+const heroFields = /* groq */ `
+  _type == "hero" => {
+    ...,
+    buttons[]{
+      ...,
+      ${linkFields}
+    }
+  }
+`
+
+const servicesColumnsFields = /* groq */ `
+  _type == "servicesColumns" => {
+    ...,
+    column1 {
+      ...,
+      links[]{
+        ...,
+        ${linkFields}
+      }
+    },
+    column2 {
+      ...,
+      links[]{
+        ...,
+        ${linkFields}
+      }
+    }
+  }
+`
+
 export const navbarQuery = defineQuery(`
   *[_type == "settings"][0]{
     title,
@@ -100,6 +144,7 @@ export const homePageQuery = defineQuery(`
           }
         }
       },
+      ${servicesColumnsFields},
     },
   }
 `)
@@ -115,36 +160,13 @@ const postFields = /* groq */ `
   "author": author->{firstName, lastName, picture},
 `
 
-const linkReference = /* groq */ `
-  _type == "link" => {
-    "page": page->slug.current,
-    "post": post->slug.current
-  }
-`
-
-const linkFields = /* groq */ `
-  link {
-      ...,
-      ${linkReference}
-      }
-`
-
-const heroFields = /* groq */ `
-  _type == "hero" => {
-    ...,
-    buttons[]{
-      ...,
-      ${linkFields}
-    }
-  }
-`
-
 export const getPageQuery = defineQuery(`
   *[_type == 'page' && slug.current == $slug][0]{
     _id,
     _type,
     name,
     slug,
+    jpSlug,
     heading,
     subheading,
     "pageBuilder": pageBuilder[]{
@@ -162,6 +184,36 @@ export const getPageQuery = defineQuery(`
         }
       },
       ${heroFields},
+      ${servicesColumnsFields},
+    },
+  }
+`)
+
+export const getPageQueryByJpSlug = defineQuery(`
+  *[_type == 'page' && jpSlug.current == $slug][0]{
+    _id,
+    _type,
+    name,
+    slug,
+    jpSlug,
+    heading,
+    subheading,
+    "pageBuilder": pageBuilder[]{
+      ...,
+      _type == "callToAction" => {
+        ${linkFields},
+      },
+      _type == "infoSection" => {
+        content[]{
+          ...,
+          markDefs[]{
+            ...,
+            ${linkReference}
+          }
+        }
+      },
+      ${heroFields},
+      ${servicesColumnsFields},
     },
   }
 `)
@@ -205,8 +257,10 @@ export const postPagesSlugs = defineQuery(`
 `)
 
 export const pagesSlugs = defineQuery(`
-  *[_type == "page" && defined(slug.current)]
-  {"slug": slug.current}
+  *[_type == "page" && defined(slug.current)] {
+    "slug": slug.current,
+    "jpSlug": jpSlug.current
+  }
 `)
 
 export const allClientsQuery = defineQuery(`

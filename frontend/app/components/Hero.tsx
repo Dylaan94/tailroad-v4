@@ -5,6 +5,8 @@ import Image from 'next/image'
 import Marquee from 'react-fast-marquee'
 
 import ResolvedLink from '@/app/components/ResolvedLink'
+import {DynamicHeading, sanitizeHeadingLevel} from '@/app/components/DynamicHeading'
+import {useLanguage} from '@/app/contexts/LanguageContext'
 import {urlForImage} from '@/sanity/lib/utils'
 import type {HeadingLevel, LocalisedString, Client, HeroProps} from '@/types'
 
@@ -17,38 +19,14 @@ const headingStyles: Record<HeadingLevel, string> = {
   h6: 'text-lg sm:text-xl md:text-2xl lg:text-3xl',
 }
 
-const validHeadingLevels: HeadingLevel[] = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
-
-function sanitizeHeadingLevel(level: string | undefined): HeadingLevel {
-  if (!level) return 'h1'
-  // Extract valid heading level, stripping any stega encoding characters
-  const match = level.match(/h[1-6]/)
-  if (match && validHeadingLevels.includes(match[0] as HeadingLevel)) {
-    return match[0] as HeadingLevel
-  }
-  return 'h1'
-}
-
-function DynamicHeading({
-  level = 'h1',
-  children,
-  className,
-}: {
-  level?: HeadingLevel
-  children: React.ReactNode
-  className?: string
-}) {
-  // Ensure the tag name is sanitized to prevent stega encoding issues
-  const Tag = sanitizeHeadingLevel(level)
-  return <Tag className={className}>{children}</Tag>
-}
-
-function ClientMarquee({ clients, title, hasBackground }: { clients: Client[], title?: LocalisedString, hasBackground: boolean }) {
+function ClientMarquee({ clients, title, hasBackground, getLocalisedString }: { clients: Client[], title?: LocalisedString, hasBackground: boolean, getLocalisedString: (localised?: {en?: string; jp?: string}) => string | undefined }) {
+  const titleText = getLocalisedString(title)
+  
   return (
     <div className="flex flex-col justify-end pb-16 h-full w-full">
-      {title && (title.en || title.jp) && (
+      {titleText && (
         <p className={`text-sm uppercase tracking-widest mb-6 ${hasBackground ? 'text-white/60' : 'text-gray-400'}`}>
-          {title.en || title.jp}
+          {titleText}
         </p>
       )}
       <Marquee
@@ -81,10 +59,14 @@ function ClientMarquee({ clients, title, hasBackground }: { clients: Client[], t
 
 export default function Hero({block, clients}: HeroProps) {
   const {header, content, buttons, backgroundType, backgroundImage, backgroundVideo, overlayOpacity = 50, showClientMarquee, clientMarqueeTitle} = block
+  const {getLocalisedString, getLocalisedContent} = useLanguage()
 
   const hasBackground = backgroundType === 'image' || backgroundType === 'video'
   const textColor = hasBackground ? 'text-white' : 'text-gray-900'
   const headingLevel = sanitizeHeadingLevel(header?.headingLevel)
+  
+  const headerText = getLocalisedString(header)
+  const contentValue = getLocalisedContent(content)
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -123,29 +105,21 @@ export default function Hero({block, clients}: HeroProps) {
       <div className="relative z-10 flex w-full px-5 md:px-10 h-screen justify-between">
         <div className="max-w-4xl space-y-8 w-[40%] mt-auto mb-16">
           {/* Header */}
-          {header && (header.en || header.jp) && (
+          {headerText && (
             <div className="space-y-2">
-              {header.en && (
-                <DynamicHeading
-                  level={headingLevel}
-                  className={`font-bold tracking-tight ${headingStyles[headingLevel]} ${textColor}`}
-                >
-                  {header.en}
-                </DynamicHeading>
-              )}
- 
+              <DynamicHeading
+                level={headingLevel}
+                className={`font-bold tracking-tight ${headingStyles[headingLevel]} ${textColor}`}
+              >
+                {headerText}
+              </DynamicHeading>
             </div>
           )}
 
           {/* Content */}
-          {content && (content.en || content.jp) && (
+          {contentValue && (
             <div className={`prose text-gray-400  ${hasBackground ? 'prose-invert' : ''} w-[70%]`}>
-              {content.en && <PortableText value={content.en} />}
-              {content.jp && (
-                <div className={`mt-4 ${hasBackground ? 'text-white/70' : 'text-gray-500'}`}>
-                  <PortableText value={content.jp} />
-                </div>
-              )}
+              <PortableText value={contentValue} />
             </div>
           )}
 
@@ -153,7 +127,7 @@ export default function Hero({block, clients}: HeroProps) {
           {buttons && buttons.length > 0 && (
             <div className="flex flex-wrap items-center justify-start gap-4">
               {buttons.map((button) => {
-                const buttonText = button.text?.en || button.text?.jp || 'Button'
+                const buttonText = getLocalisedString(button.text) || 'Button'
                 const isPrimary = button.variant !== 'secondary'
 
                 return (
@@ -188,6 +162,7 @@ export default function Hero({block, clients}: HeroProps) {
               clients={clients} 
               title={clientMarqueeTitle}
               hasBackground={hasBackground}
+              getLocalisedString={getLocalisedString}
             />
           )}
         </div>

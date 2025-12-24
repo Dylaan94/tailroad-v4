@@ -8,7 +8,7 @@ export const pageBuilderField = defineField({
   name: 'pageBuilder',
   title: 'Page builder',
   type: 'array',
-  of: [{type: 'hero'}, {type: 'callToAction'}, {type: 'infoSection'}],
+  of: [{type: 'hero'}, {type: 'callToAction'}, {type: 'infoSection'}, {type: 'servicesColumns'}],
   options: {
     insertMenu: {
       views: [

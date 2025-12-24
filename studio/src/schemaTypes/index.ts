@@ -7,6 +7,7 @@ import {service} from './documents/service'
 import {callToAction} from './objects/callToAction'
 import {infoSection} from './objects/infoSection'
 import {hero} from './objects/hero'
+import {servicesColumns} from './objects/servicesColumns'
 import {settings} from './singletons/settings'
 import {link} from './objects/link'
 import {blockContent} from './objects/blockContent'
@@ -17,7 +18,7 @@ import {homePage} from './singletons/home'
 
 const singletonTypes = [homePage]
 const documentTypes = [page, post, person, settings, client, industry, service]
-const objectTypes = [blockContent, infoSection, callToAction, hero, link, localisedString, localisedBlockContent, localisedHeader]
+const objectTypes = [blockContent, infoSection, callToAction, hero, servicesColumns, link, localisedString, localisedBlockContent, localisedHeader]
 
 export const schemaTypes = [
   ...singletonTypes,
