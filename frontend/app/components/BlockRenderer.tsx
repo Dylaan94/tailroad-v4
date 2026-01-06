@@ -5,6 +5,7 @@ import Info from '@/app/components/InfoSection'
 import Hero from '@/app/components/Hero'
 import ServicesColumns from '@/app/components/ServicesColumns'
 import CaseStudies from '@/app/components/CaseStudies'
+import FAQ from '@/app/components/FAQ'
 import {dataAttr} from '@/sanity/lib/utils'
 import type {BaseBlock, BlockRendererProps} from '@/types'
 
@@ -18,6 +19,7 @@ const Blocks: BlocksType = {
   hero: Hero,
   servicesColumns: ServicesColumns,
   caseStudies: CaseStudies,
+  faq: FAQ,
 }
 
 /**

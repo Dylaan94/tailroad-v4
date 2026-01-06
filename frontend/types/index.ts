@@ -155,7 +155,23 @@ export type CaseStudiesBlock = BaseBlock & {
   }>
 }
 
-export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock | CaseStudiesBlock
+export type FAQItem = {
+  _key: string
+  question?: LocalisedString
+  answer?: LocalisedBlockContent
+}
+
+export type FAQBlock = BaseBlock & {
+  _type: 'faq'
+  content?: LocalisedBlockContent
+  button?: {
+    text?: LocalisedString
+    link?: SanityLink
+  }
+  faqItems?: FAQItem[]
+}
+
+export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock | CaseStudiesBlock | FAQBlock
 
 // ============================================
 // Component Props Types
@@ -209,6 +225,11 @@ export type CaseStudiesProps = {
   block: CaseStudiesBlock
   index: number
   caseStudiesData?: CaseStudy[]
+}
+
+export type FAQProps = {
+  block: FAQBlock
+  index: number
 }
 
 // ============================================
