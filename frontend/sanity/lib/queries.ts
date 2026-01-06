@@ -46,6 +46,35 @@ const servicesColumnsFields = /* groq */ `
   }
 `
 
+const caseStudiesFields = /* groq */ `
+  _type == "caseStudies" => {
+    ...,
+    button {
+      ...,
+      ${linkFields}
+    },
+    caseStudies[]-> {
+      _id,
+      title,
+      slug,
+      jpSlug,
+      featuredImage {
+        asset,
+        alt
+      },
+      projectOutline,
+      "industries": industries[]-> {
+        _id,
+        name
+      },
+      "services": services[]-> {
+        _id,
+        name
+      }
+    }
+  }
+`
+
 export const navbarQuery = defineQuery(`
   *[_type == "settings"][0]{
     title,
@@ -108,6 +137,25 @@ export const homePageQuery = defineQuery(`
         alt
       }
     },
+    "caseStudiesData": *[_type == "caseStudy"] | order(_createdAt desc) {
+      _id,
+      title,
+      slug,
+      jpSlug,
+      featuredImage {
+        asset,
+        alt
+      },
+      projectOutline,
+      "industries": industries[]-> {
+        _id,
+        name
+      },
+      "services": services[]-> {
+        _id,
+        name
+      }
+    },
     "pageBuilder": pageBuilder[]{
       ...,
       _type == "callToAction" => {
@@ -145,6 +193,7 @@ export const homePageQuery = defineQuery(`
         }
       },
       ${servicesColumnsFields},
+      ${caseStudiesFields},
     },
   }
 `)
@@ -169,6 +218,25 @@ export const getPageQuery = defineQuery(`
     jpSlug,
     heading,
     subheading,
+    "caseStudiesData": *[_type == "caseStudy"] | order(_createdAt desc) {
+      _id,
+      title,
+      slug,
+      jpSlug,
+      featuredImage {
+        asset,
+        alt
+      },
+      projectOutline,
+      "industries": industries[]-> {
+        _id,
+        name
+      },
+      "services": services[]-> {
+        _id,
+        name
+      }
+    },
     "pageBuilder": pageBuilder[]{
       ...,
       _type == "callToAction" => {
@@ -185,6 +253,7 @@ export const getPageQuery = defineQuery(`
       },
       ${heroFields},
       ${servicesColumnsFields},
+      ${caseStudiesFields},
     },
   }
 `)
@@ -198,6 +267,25 @@ export const getPageQueryByJpSlug = defineQuery(`
     jpSlug,
     heading,
     subheading,
+    "caseStudiesData": *[_type == "caseStudy"] | order(_createdAt desc) {
+      _id,
+      title,
+      slug,
+      jpSlug,
+      featuredImage {
+        asset,
+        alt
+      },
+      projectOutline,
+      "industries": industries[]-> {
+        _id,
+        name
+      },
+      "services": services[]-> {
+        _id,
+        name
+      }
+    },
     "pageBuilder": pageBuilder[]{
       ...,
       _type == "callToAction" => {
@@ -214,6 +302,7 @@ export const getPageQueryByJpSlug = defineQuery(`
       },
       ${heroFields},
       ${servicesColumnsFields},
+      ${caseStudiesFields},
     },
   }
 `)
@@ -270,6 +359,27 @@ export const allClientsQuery = defineQuery(`
     logo {
       asset,
       alt
+    }
+  }
+`)
+
+export const allCaseStudiesQuery = defineQuery(`
+  *[_type == "caseStudy"] | order(_createdAt desc) {
+    _id,
+    title,
+    slug,
+    jpSlug,
+    featuredImage {
+      asset,
+      alt
+    },
+    "industries": industries[]-> {
+      _id,
+      name
+    },
+    "services": services[]-> {
+      _id,
+      name
     }
   }
 `)

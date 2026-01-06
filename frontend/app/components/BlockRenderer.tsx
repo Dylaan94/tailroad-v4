@@ -4,6 +4,7 @@ import Cta from '@/app/components/Cta'
 import Info from '@/app/components/InfoSection'
 import Hero from '@/app/components/Hero'
 import ServicesColumns from '@/app/components/ServicesColumns'
+import CaseStudies from '@/app/components/CaseStudies'
 import {dataAttr} from '@/sanity/lib/utils'
 import type {BaseBlock, BlockRendererProps} from '@/types'
 
@@ -16,12 +17,13 @@ const Blocks: BlocksType = {
   infoSection: Info,
   hero: Hero,
   servicesColumns: ServicesColumns,
+  caseStudies: CaseStudies,
 }
 
 /**
  * Used by the <PageBuilder>, this component renders a the component that matches the block type.
  */
-export default function BlockRenderer({block, index, pageId, pageType, clients}: BlockRendererProps) {
+export default function BlockRenderer({block, index, pageId, pageType, clients, caseStudiesData}: BlockRendererProps) {
   // Block does exist
   if (typeof Blocks[block._type] !== 'undefined') {
     return (
@@ -38,6 +40,7 @@ export default function BlockRenderer({block, index, pageId, pageType, clients}:
           block: block,
           index: index,
           clients: clients,
+          caseStudiesData: caseStudiesData,
         })}
       </div>
     )

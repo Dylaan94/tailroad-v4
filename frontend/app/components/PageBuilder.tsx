@@ -8,20 +8,37 @@ import BlockRenderer from '@/app/components/BlockRenderer'
 import {GetPageQueryResult} from '@/sanity.types'
 import {dataAttr} from '@/sanity/lib/utils'
 import {studioUrl} from '@/sanity/lib/api'
-import type {Client, PageBuilderSection, PageData} from '@/types'
+import type {Client, PageBuilderSection, PageData, CaseStudy} from '@/types'
 
 type PageBuilderPageProps = {
-  page: GetPageQueryResult & { clients?: Client[] }
+  page: GetPageQueryResult & { clients?: Client[]; caseStudiesData?: any[] }
 }
 
 /**
  * The PageBuilder component is used to render the blocks from the `pageBuilder` field in the Page type in your Sanity Studio.
  */
 
-function renderSections(pageBuilderSections: PageBuilderSection[], page: GetPageQueryResult & { clients?: Client[] }) {
+function renderSections(pageBuilderSections: PageBuilderSection[], page: GetPageQueryResult & { clients?: Client[]; caseStudiesData?: CaseStudy[] }) {
   if (!page) {
     return null
   }
+  
+  // Extract case studies data from blocks that need it
+  const allCaseStudies: CaseStudy[] = []
+  pageBuilderSections.forEach((block: any) => {
+    if (block._type === 'caseStudies') {
+      if (block.selectionType === 'all') {
+        // For "all" selection, we'll need to fetch all case studies
+        // This will be handled by the query, but we can also extract from block if available
+        if (block.caseStudies && Array.isArray(block.caseStudies)) {
+          allCaseStudies.push(...block.caseStudies)
+        }
+      } else if (block.caseStudies && Array.isArray(block.caseStudies)) {
+        allCaseStudies.push(...block.caseStudies)
+      }
+    }
+  })
+  
   return (
     <div
       data-sanity={dataAttr({
@@ -30,16 +47,29 @@ function renderSections(pageBuilderSections: PageBuilderSection[], page: GetPage
         path: `pageBuilder`,
       }).toString()}
     >
-      {pageBuilderSections.map((block: any, index: number) => (
-        <BlockRenderer
-          key={block._key}
-          index={index}
-          block={block}
-          pageId={page._id}
-          pageType={page._type}
-          clients={page.clients}
-        />
-      ))}
+      {pageBuilderSections.map((block: any, index: number) => {
+        // Get case studies data for this specific block if it's a caseStudies block
+        let blockCaseStudiesData: CaseStudy[] | undefined
+        if (block._type === 'caseStudies') {
+          if (block.selectionType === 'all') {
+            blockCaseStudiesData = page.caseStudiesData
+          } else {
+            blockCaseStudiesData = block.caseStudies
+          }
+        }
+        
+        return (
+          <BlockRenderer
+            key={block._key}
+            index={index}
+            block={block}
+            pageId={page._id}
+            pageType={page._type}
+            clients={page.clients}
+            caseStudiesData={blockCaseStudiesData}
+          />
+        )
+      })}
     </div>
   )
 }

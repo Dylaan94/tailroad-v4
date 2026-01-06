@@ -99,10 +99,11 @@ export type HeroBlock = BaseBlock & {
   header?: LocalisedHeader
   content?: LocalisedBlockContent
   buttons?: Button[]
-  backgroundType?: 'none' | 'image' | 'video'
+  backgroundType?: 'none' | 'image' | 'video' | 'rippleGrid'
   backgroundImage?: SanityImage
   backgroundVideo?: string
   overlayOpacity?: number
+  invertRippleGrid?: boolean
   showClientMarquee?: boolean
   clientMarqueeTitle?: LocalisedString
 }
@@ -140,7 +141,21 @@ export type ServicesColumnsBlock = BaseBlock & {
   column2?: ServiceColumn
 }
 
-export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock
+export type CaseStudiesBlock = BaseBlock & {
+  _type: 'caseStudies'
+  header?: LocalisedHeader
+  button?: {
+    text?: LocalisedString
+    link?: SanityLink
+  }
+  selectionType?: 'all' | 'manual'
+  caseStudies?: Array<{
+    _id: string
+    _type: 'reference'
+  }>
+}
+
+export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock | CaseStudiesBlock
 
 // ============================================
 // Component Props Types
@@ -152,6 +167,7 @@ export type BlockRendererProps = {
   pageId: string
   pageType: string
   clients?: Client[]
+  caseStudiesData?: CaseStudy[]
 }
 
 export type HeroProps = {
@@ -163,6 +179,36 @@ export type HeroProps = {
 export type ServicesColumnsProps = {
   block: ServicesColumnsBlock
   index: number
+}
+
+export type CaseStudy = {
+  _id: string
+  title?: LocalisedString
+  slug?: {
+    current?: string
+  }
+  jpSlug?: {
+    current?: string
+  }
+  featuredImage?: {
+    asset?: any
+    alt?: LocalisedString
+  }
+  projectOutline?: LocalisedBlockContent
+  industries?: Array<{
+    _id: string
+    name?: LocalisedString
+  }>
+  services?: Array<{
+    _id: string
+    name?: LocalisedString
+  }>
+}
+
+export type CaseStudiesProps = {
+  block: CaseStudiesBlock
+  index: number
+  caseStudiesData?: CaseStudy[]
 }
 
 // ============================================

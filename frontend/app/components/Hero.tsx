@@ -102,8 +102,8 @@ export default function Hero({block, clients}: HeroProps) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex w-full px-5 md:px-10 h-screen justify-between">
-        <div className="max-w-4xl space-y-8 w-[40%] mt-auto mb-16">
+      <div className="relative z-10 flex flex-col md:flex-row w-full px-5 md:px-10 h-screen justify-between">
+        <div className="max-w-4xl space-y-8 md:w-[40%] w-full mt-auto mb-16">
           {/* Header */}
           {headerText && (
             <div className="space-y-2">
@@ -118,7 +118,7 @@ export default function Hero({block, clients}: HeroProps) {
 
           {/* Content */}
           {contentValue && (
-            <div className={`prose text-gray-400  ${hasBackground ? 'prose-invert' : ''} w-[70%]`}>
+            <div className={`prose text-gray-400  ${hasBackground ? 'prose-invert' : ''} sm:w-[70%] w-full`}>
               <PortableText value={contentValue} />
             </div>
           )}
@@ -156,7 +156,7 @@ export default function Hero({block, clients}: HeroProps) {
         </div>
         
         {/* Client Marquee */}
-        <div className="w-[40%] flex ">
+        <div className="md:w-[40%] w-full flex ">
           {showClientMarquee && clients && clients.length > 0 && (
             <ClientMarquee 
               clients={clients} 

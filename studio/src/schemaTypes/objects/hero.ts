@@ -95,6 +95,7 @@ export const hero = defineType({
           {title: 'None (White)', value: 'none'},
           {title: 'Image', value: 'image'},
           {title: 'Video', value: 'video'},
+          {title: 'Ripple Grid', value: 'rippleGrid'},
         ],
         layout: 'radio',
       },
@@ -130,10 +131,19 @@ export const hero = defineType({
       title: 'Overlay Opacity',
       type: 'number',
       group: 'background',
-      hidden: ({parent}) => parent?.backgroundType === 'none',
+      hidden: ({parent}) => parent?.backgroundType === 'none' || parent?.backgroundType === 'rippleGrid',
       initialValue: 50,
       validation: (Rule) => Rule.min(0).max(100),
       description: 'Darken the background (0-100%)',
+    }),
+    defineField({
+      name: 'invertRippleGrid',
+      title: 'Invert Colors',
+      type: 'boolean',
+      group: 'background',
+      hidden: ({parent}) => parent?.backgroundType !== 'rippleGrid',
+      initialValue: false,
+      description: 'Invert the ripple grid colors (white/black swap)',
     }),
     // Client Marquee
     defineField({

@@ -1,6 +1,6 @@
 'use client'
 
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -26,11 +26,13 @@ function NavLink({
   children,
   className,
   language,
+  onClick,
 }: {
   link?: SanityLink
   children: React.ReactNode
   className?: string
   language: 'en' | 'jp'
+  onClick?: () => void
 }) {
   const href = resolveLink(link, language)
   const isExternal = link?.openInNewTab || href.startsWith('http')
@@ -41,6 +43,7 @@ function NavLink({
       className={className}
       target={isExternal ? '_blank' : undefined}
       rel={isExternal ? 'noopener noreferrer' : undefined}
+      onClick={onClick}
     >
       {children}
     </Link>
@@ -161,16 +164,202 @@ function NavItemComponent({
   )
 }
 
+function MobileMenu({
+  isOpen,
+  onClose,
+  navbar,
+  navbarCta,
+  language,
+  getLocalisedString,
+  setLanguage,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  navbar?: NavItem[]
+  navbarCta?: any
+  language: 'en' | 'jp'
+  getLocalisedString: (localised?: {en?: string; jp?: string}) => string | undefined
+  setLanguage: (lang: 'en' | 'jp') => void
+}) {
+  const [openMegamenus, setOpenMegamenus] = useState<Set<string>>(new Set())
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
+  const toggleMegamenu = (key: string) => {
+    const newSet = new Set(openMegamenus)
+    if (newSet.has(key)) {
+      newSet.delete(key)
+    } else {
+      newSet.add(key)
+    }
+    setOpenMegamenus(newSet)
+  }
+
+  return (
+    <>
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Slide-in Menu */}
+      <div
+        className={`fixed top-0 right-0 h-full w-[90%] max-w-sm bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out md:hidden ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <span className="font-semibold text-gray-900">Menu</span>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close menu"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Menu Items */}
+          <div className="flex-1 overflow-y-auto py-4">
+            <nav className="space-y-1">
+              {navbar?.map((item) => (
+                <div key={item._key}>
+                  {item.hasMegamenu && item.megamenu ? (
+                    <>
+                      <button
+                        onClick={() => toggleMegamenu(item._key)}
+                        className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="font-medium">{getLocalisedString(item.label)}</span>
+                        <svg
+                          className={`w-5 h-5 transition-transform ${
+                            openMegamenus.has(item._key) ? 'rotate-180' : ''
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {openMegamenus.has(item._key) && item.megamenu && (
+                        <div className="bg-gray-50">
+                          {item.megamenu.map((column) => (
+                            <div key={column._key} className="px-4 py-3 border-b border-gray-200 last:border-b-0">
+                              {getLocalisedString(column.title) && (
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                                  {getLocalisedString(column.title)}
+                                </h3>
+                              )}
+                              <ul className="space-y-1">
+                                {column.links?.map((linkItem) => (
+                                  <li key={linkItem._key}>
+                                    <NavLink
+                                      link={linkItem.link}
+                                      language={language}
+                                      className="block px-2 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-100 rounded transition-colors"
+                                      onClick={onClose}
+                                    >
+                                      {getLocalisedString(linkItem.label)}
+                                    </NavLink>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <NavLink
+                      link={item.link}
+                      language={language}
+                      className="block px-4 py-3 text-gray-900 hover:bg-gray-50 transition-colors font-medium"
+                      onClick={onClose}
+                    >
+                      {getLocalisedString(item.label)}
+                    </NavLink>
+                  )}
+                </div>
+              ))}
+
+              {/* CTA Button */}
+              {navbarCta && getLocalisedString(navbarCta.label) && (
+                <div className="px-4 py-3 border-t border-gray-200 mt-4">
+                  <NavLink
+                    link={navbarCta.link}
+                    language={language}
+                    className="block w-full px-4 py-2 text-sm font-medium text-center text-white bg-black rounded-full hover:bg-gray-800 transition-colors"
+                    onClick={onClose}
+                  >
+                    {getLocalisedString(navbarCta.label)}
+                  </NavLink>
+                </div>
+              )}
+            </nav>
+          </div>
+
+          {/* Language Selector Footer */}
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-xs text-gray-500 mr-2">Language:</span>
+              <button
+                onClick={() => setLanguage('en')}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                  language === 'en' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLanguage('jp')}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                  language === 'jp' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                JP
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function Navbar({data}: NavbarProps) {
   const {language, setLanguage, getLocalisedString} = useLanguage()
   const prefix = language === 'jp' ? '/jp' : ''
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Handle null data (settings not yet created)
   if (!data) {
     return (
-      <nav className="fixed top-6 right-6 z-50">
-        <div className="flex items-center gap-1 px-4 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
-          <Link href={prefix || '/'} className="flex items-center gap-2 px-2">
+      <nav className="fixed top-4 left-4 right-4 md:top-6 md:right-6 md:left-auto z-50">
+        <div className="flex items-center justify-between px-4 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
+          <Link href={prefix || '/'} className="flex items-center gap-2">
             <Image
               src="/images/tailroad-logo.svg"
               alt="Tailroad Labs"
@@ -181,7 +370,7 @@ export default function Navbar({data}: NavbarProps) {
             <span className="font-medium text-gray-900">Tailroad Labs</span>
           </Link>
           {/* Language Selector */}
-          <div className="flex items-center gap-1 ml-2 px-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setLanguage('en')}
               className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
@@ -207,72 +396,108 @@ export default function Navbar({data}: NavbarProps) {
   const {navbar, navbarCta} = data
 
   return (
-    <nav className="fixed top-6 right-6 z-50">
-      {/* Bubble Container */}
-      <div className="flex items-center gap-1 px-2 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
-        {/* Logo & Site Title */}
-        <Link href={prefix || '/'} className="flex items-center gap-2 px-3">
-          <Image
-            src="/images/tailroad-logo.svg"
-            alt="Tailroad Labs"
-            width={28}
-            height={30}
-            className="h-7 w-auto"
-          />
-          <span className="font-medium text-gray-900">Tailroad Labs</span>
-        </Link>
-
-        {/* Divider */}
-        <div className="w-px h-6 bg-gray-200" />
-
-        {/* Nav Items */}
-        <div className="flex items-center">
-          {navbar?.map((item) => (
-            <NavItemComponent
-              key={item._key}
-              item={item}
-              language={language}
-              getLocalisedString={getLocalisedString}
+    <>
+      <nav className="fixed top-4 left-4 right-4 md:top-6 md:right-6 md:left-auto z-50">
+        {/* Mobile: Simple bar with logo and hamburger */}
+        <div className="md:hidden flex items-center justify-between px-4 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
+          <Link href={prefix || '/'} className="flex items-center gap-2">
+            <Image
+              src="/images/tailroad-logo.svg"
+              alt="Tailroad Labs"
+              width={28}
+              height={30}
+              className="h-7 w-auto"
             />
-          ))}
+            <span className="font-medium text-gray-900">Tailroad Labs</span>
+          </Link>
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Open menu"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
 
-        {/* CTA Button */}
-        {navbarCta && getLocalisedString(navbarCta.label) && (
-          <>
-            <div className="w-px h-6 bg-gray-200" />
-            <NavLink
-              link={navbarCta.link}
-              language={language}
-              className="ml-1 px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 transition-colors"
+        {/* Desktop: Full bubble container */}
+        <div className="hidden md:flex items-center gap-1 px-2 py-2 bg-white/70 backdrop-blur-xl rounded-full border border-gray-200/50 shadow-lg shadow-black/5">
+          {/* Logo & Site Title */}
+          <Link href={prefix || '/'} className="flex items-center gap-2 px-3">
+            <Image
+              src="/images/tailroad-logo.svg"
+              alt="Tailroad Labs"
+              width={28}
+              height={30}
+              className="h-7 w-auto"
+            />
+            <span className="font-medium text-gray-900">Tailroad Labs</span>
+          </Link>
+
+          {/* Divider */}
+          <div className="w-px h-6 bg-gray-200" />
+
+          {/* Nav Items */}
+          <div className="flex items-center">
+            {navbar?.map((item) => (
+              <NavItemComponent
+                key={item._key}
+                item={item}
+                language={language}
+                getLocalisedString={getLocalisedString}
+              />
+            ))}
+          </div>
+
+          {/* CTA Button */}
+          {navbarCta && getLocalisedString(navbarCta.label) && (
+            <>
+              <div className="w-px h-6 bg-gray-200" />
+              <NavLink
+                link={navbarCta.link}
+                language={language}
+                className="ml-1 px-4 py-2 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 transition-colors"
+              >
+                {getLocalisedString(navbarCta.label)}
+              </NavLink>
+            </>
+          )}
+
+          {/* Language Selector */}
+          <div className="w-px h-6 bg-gray-200" />
+          <div className="flex items-center gap-1 px-2">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                language === 'en' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
+              }`}
             >
-              {getLocalisedString(navbarCta.label)}
-            </NavLink>
-          </>
-        )}
-
-        {/* Language Selector */}
-        <div className="w-px h-6 bg-gray-200" />
-        <div className="flex items-center gap-1 px-2">
-          <button
-            onClick={() => setLanguage('en')}
-            className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
-              language === 'en' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
-            }`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => setLanguage('jp')}
-            className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
-              language === 'jp' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
-            }`}
-          >
-            JP
-          </button>
+              EN
+            </button>
+            <button
+              onClick={() => setLanguage('jp')}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                language === 'jp' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              JP
+            </button>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Mobile Menu */}
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        navbar={navbar}
+        navbarCta={navbarCta}
+        language={language}
+        getLocalisedString={getLocalisedString}
+        setLanguage={setLanguage}
+      />
+    </>
   )
 }
 

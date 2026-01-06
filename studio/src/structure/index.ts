@@ -3,6 +3,7 @@ import type {StructureBuilder, StructureResolver} from 'sanity/structure'
 import pluralize from 'pluralize-esm'
 import {homeStructure} from './homeStructure'
 import {clientSatisfactionStructure} from './clientSatisfactionStructure'
+import {caseStudiesStructure} from './caseStudiesStructure'
 
 /**
  * Structure builder is useful whenever you want to control how documents are grouped and
@@ -11,7 +12,7 @@ import {clientSatisfactionStructure} from './clientSatisfactionStructure'
  */
 
 // Types to hide from the auto-generated list (singletons, grouped items, internal types)
-const DISABLED_TYPES = ['settings', 'assist.instruction.context', 'homePage', 'client', 'industry', 'service']
+const DISABLED_TYPES = ['settings', 'assist.instruction.context', 'homePage', 'client', 'industry', 'service', 'caseStudy']
 
 export const structure: StructureResolver = (S: StructureBuilder) =>
   S.list()
@@ -28,6 +29,8 @@ export const structure: StructureResolver = (S: StructureBuilder) =>
         }),
       S.divider(),
       clientSatisfactionStructure(S),
+      S.divider(),
+      caseStudiesStructure(S),
       // Settings Singleton
       S.listItem()
         .title('Site Settings')
