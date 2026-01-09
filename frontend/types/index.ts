@@ -171,7 +171,18 @@ export type FAQBlock = BaseBlock & {
   faqItems?: FAQItem[]
 }
 
-export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock | CaseStudiesBlock | FAQBlock
+export type TextColumn = {
+  _key: string
+  content?: LocalisedBlockContent
+}
+
+export type TextColumnsBlock = BaseBlock & {
+  _type: 'textColumns'
+  header?: LocalisedHeader
+  columns?: TextColumn[]
+}
+
+export type PageBuilderBlock = HeroBlock | CallToActionBlock | InfoSectionBlock | ServicesColumnsBlock | CaseStudiesBlock | FAQBlock | TextColumnsBlock
 
 // ============================================
 // Component Props Types
@@ -232,6 +243,11 @@ export type FAQProps = {
   index: number
 }
 
+export type TextColumnsProps = {
+  block: TextColumnsBlock
+  index: number
+}
+
 // ============================================
 // Navigation Types
 // ============================================
@@ -286,3 +302,24 @@ export type PageData = {
   clients?: Client[]
 }
 
+export type CaseStudyHeaderProps = {
+  caseStudy: CaseStudy & {
+    client?: {
+      _id: string
+      companyName?: {en?: string; jp?: string}
+      logo?: {
+        asset?: any
+        alt?: {en?: string; jp?: string}
+      }
+    }
+    industries?: Array<{
+      _id: string
+      name?: {en?: string; jp?: string}
+    }>
+    services?: Array<{
+      _id: string
+      name?: {en?: string; jp?: string}
+    }>
+  }
+  language?: 'en' | 'jp'
+}

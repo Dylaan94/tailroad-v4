@@ -57,6 +57,13 @@ export const caseStudy = defineType({
       ],
     }),
     defineField({
+      name: 'client',
+      title: 'Client',
+      type: 'reference',
+      to: [{ type: 'client' }],
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'industries',
       title: 'Industries',
       type: 'array',

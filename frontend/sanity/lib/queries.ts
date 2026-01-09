@@ -75,6 +75,31 @@ const caseStudiesFields = /* groq */ `
   }
 `
 
+const textColumnsFields = /* groq */ `
+  _type == "textColumns" => {
+    ...,
+    columns[]{
+      ...,
+      content {
+        en[]{
+          ...,
+          markDefs[]{
+            ...,
+            ${linkReference}
+          }
+        },
+        jp[]{
+          ...,
+          markDefs[]{
+            ...,
+            ${linkReference}
+          }
+        }
+      }
+    }
+  }
+`
+
 export const navbarQuery = defineQuery(`
   *[_type == "settings"][0]{
     title,
@@ -254,6 +279,7 @@ export const getPageQuery = defineQuery(`
       ${heroFields},
       ${servicesColumnsFields},
       ${caseStudiesFields},
+      ${textColumnsFields},
     },
   }
 `)
@@ -303,6 +329,7 @@ export const getPageQueryByJpSlug = defineQuery(`
       ${heroFields},
       ${servicesColumnsFields},
       ${caseStudiesFields},
+      ${textColumnsFields},
     },
   }
 `)
@@ -381,5 +408,112 @@ export const allCaseStudiesQuery = defineQuery(`
       _id,
       name
     }
+  }
+`)
+
+export const getCaseStudyQuery = defineQuery(`
+  *[_type == "caseStudy" && slug.current == $slug][0]{
+    _id,
+    _type,
+    title,
+    slug,
+    jpSlug,
+    featuredImage {
+      asset,
+      alt
+    },
+    "client": client-> {
+      _id,
+      companyName,
+      logo {
+        asset,
+        alt
+      }
+    },
+    "industries": industries[]-> {
+      _id,
+      name
+    },
+    "services": services[]-> {
+      _id,
+      name
+    },
+    projectOutline,
+    "pageBuilder": pageBuilder[]{
+      ...,
+      _type == "callToAction" => {
+        ${linkFields},
+      },
+      _type == "infoSection" => {
+        content[]{
+          ...,
+          markDefs[]{
+            ...,
+            ${linkReference}
+          }
+        }
+      },
+      ${heroFields},
+      ${servicesColumnsFields},
+      ${caseStudiesFields},
+      ${textColumnsFields},
+    },
+  }
+`)
+
+export const getCaseStudyQueryByJpSlug = defineQuery(`
+  *[_type == "caseStudy" && jpSlug.current == $slug][0]{
+    _id,
+    _type,
+    title,
+    slug,
+    jpSlug,
+    featuredImage {
+      asset,
+      alt
+    },
+    "client": client-> {
+      _id,
+      companyName,
+      logo {
+        asset,
+        alt
+      }
+    },
+    "industries": industries[]-> {
+      _id,
+      name
+    },
+    "services": services[]-> {
+      _id,
+      name
+    },
+    projectOutline,
+    "pageBuilder": pageBuilder[]{
+      ...,
+      _type == "callToAction" => {
+        ${linkFields},
+      },
+      _type == "infoSection" => {
+        content[]{
+          ...,
+          markDefs[]{
+            ...,
+            ${linkReference}
+          }
+        }
+      },
+      ${heroFields},
+      ${servicesColumnsFields},
+      ${caseStudiesFields},
+      ${textColumnsFields},
+    },
+  }
+`)
+
+export const caseStudySlugs = defineQuery(`
+  *[_type == "caseStudy" && defined(slug.current)] {
+    "slug": slug.current,
+    "jpSlug": jpSlug.current
   }
 `)

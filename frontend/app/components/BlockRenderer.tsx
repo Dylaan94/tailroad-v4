@@ -6,8 +6,9 @@ import Hero from '@/app/components/Hero'
 import ServicesColumns from '@/app/components/ServicesColumns'
 import CaseStudies from '@/app/components/CaseStudies'
 import FAQ from '@/app/components/FAQ'
-import {dataAttr} from '@/sanity/lib/utils'
-import type {BaseBlock, BlockRendererProps} from '@/types'
+import TextColumns from '@/app/components/TextColumns'
+import { dataAttr } from '@/sanity/lib/utils'
+import type { BaseBlock, BlockRendererProps } from '@/types'
 
 type BlocksType = {
   [key: string]: React.FC<any>
@@ -20,12 +21,13 @@ const Blocks: BlocksType = {
   servicesColumns: ServicesColumns,
   caseStudies: CaseStudies,
   faq: FAQ,
+  textColumns: TextColumns,
 }
 
 /**
  * Used by the <PageBuilder>, this component renders a the component that matches the block type.
  */
-export default function BlockRenderer({block, index, pageId, pageType, clients, caseStudiesData}: BlockRendererProps) {
+export default function BlockRenderer({ block, index, pageId, pageType, clients, caseStudiesData }: BlockRendererProps) {
   // Block does exist
   if (typeof Blocks[block._type] !== 'undefined') {
     return (
@@ -54,6 +56,6 @@ export default function BlockRenderer({block, index, pageId, pageType, clients, 
         A &ldquo;{block._type}&rdquo; block hasn&apos;t been created
       </div>
     ),
-    {key: block._key},
+    { key: block._key },
   )
 }
