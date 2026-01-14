@@ -124,7 +124,7 @@ export const hero = defineType({
       type: 'url',
       group: 'background',
       hidden: ({parent}) => parent?.backgroundType !== 'video',
-      description: 'Enter a video URL (e.g., MP4 file URL)',
+      description: 'Enter a video URL (e.g., MP4 file URL or Vimeo URL like https://vimeo.com/123456789)',
     }),
     defineField({
       name: 'overlayOpacity',
